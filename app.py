@@ -6,10 +6,15 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from transformers import pipeline
 import torch
 import tensorflow as tf
 from googleapiclient.discovery import build
+
+# Attempt to import the pipeline from transformers
+try:
+    from transformers import pipeline
+except ImportError as e:
+    st.error(f"Failed to import pipeline from transformers: {e}")
 
 # Function to initialize IBMQ account
 def initialize_ibmq():
@@ -86,9 +91,10 @@ if initialize_ibmq():
     plt.plot(data['x'], data['y'])
     st.pyplot(plt)
 
-    st.header("Transformers Example")
-    classifier = pipeline('sentiment-analysis')
-    st.write(classifier('We are very happy to show you the 🤗 Transformers library.'))
+    if 'pipeline' in globals():
+        st.header("Transformers Example")
+        classifier = pipeline('sentiment-analysis')
+        st.write(classifier('We are very happy to show you the 🤗 Transformers library.'))
 
     st.header("Torch Example")
     tensor = torch.tensor([1, 2, 3])
