@@ -1,125 +1,55 @@
 import streamlit as st
-from qiskit import Aer, execute, QuantumCircuit
-from qiskit.providers.ibmq import IBMQ, IBMQAccountCredentialsNotFound
-import pennylane as qml
-from sklearn.linear_model import LinearRegression
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import torch
-import tensorflow as tf
-from googleapiclient.discovery import build
+from qiskit import IBMQ, Aer, execute, QuantumCircuit
+from qiskit.visualization import plot_histogram
 
-# Attempt to import the pipeline from transformers
-try:
-    from transformers import pipeline
-except ImportError as e:
-    st.error(f"Failed to import pipeline from transformers: {e}")
+# Load IBMQ account
+IBMQ.load_account()
+provider = IBMQ.get_provider(hub='ibm-q')
 
-# Function to initialize IBMQ account
-def initialize_ibmq():
-    try:
-        IBMQ.load_account()
-        return True
-    except IBMQAccountCredentialsNotFound:
-        return False
+# Define the CUTOE formula
+# Note: Replace this with the actual mathematical representation of the CUTOE formula
+def cutoe_formula(x, y, z):
+    return x**2 + y**2 + z**2  # Placeholder formula
 
 # Function to run a quantum circuit
 def run_quantum_circuit():
-    qc = QuantumCircuit(2, 2)
+    # Create a quantum circuit
+    qc = QuantumCircuit(3, 3)
     qc.h(0)
     qc.cx(0, 1)
-    qc.measure([0,1], [0,1])
+    qc.cx(0, 2)
+    qc.measure([0, 1, 2], [0, 1, 2])
     
+    # Use Aer's qasm_simulator
     simulator = Aer.get_backend('qasm_simulator')
-    job = execute(qc, simulator, shots=1024)
+    
+    # Execute the circuit on the qasm simulator
+    job = execute(qc, simulator, shots=1000)
+    
+    # Grab results from the job
     result = job.result()
-    counts = result.get_counts(qc)
-    return counts
-
-# Function to demonstrate a simple Pennylane circuit
-def pennylane_example():
-    dev = qml.device('default.qubit', wires=1)
     
-    @qml.qnode(dev)
-    def circuit(theta):
-        qml.RX(theta, wires=0)
-        return qml.expval(qml.PauliZ(0))
+    # Returns counts
+    return result.get_counts(qc)
+
+# Streamlit interface
+st.title("Quantum Supercomputer: Solving the CUTOE Formula")
+
+st.header("Input Parameters")
+x = st.number_input("Enter value for x", value=1.0)
+y = st.number_input("Enter value for y", value=1.0)
+z = st.number_input("Enter value for z", value=1.0)
+
+if st.button("Solve Formula"):
+    result = cutoe_formula(x, y, z)
+    st.write(f"Result of CUTOE formula: {result}")
     
-    return circuit(0.5)
-
-# Function to demonstrate scikit-learn
-def sklearn_example():
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    model = LinearRegression().fit(X, y)
-    return model.coef_
-
-# Function to answer user questions
-def answer_question(question):
-    if "theory of everything" in question.lower():
-        return "The Theory of Everything aims to unify general relativity and quantum mechanics into a single theoretical framework. There isn't a single accepted formula yet, but string theory and loop quantum gravity are leading candidates."
-    else:
-        return "I don't have an answer to that question. Please try asking something else."
-
-# Streamlit app interface
-st.title("Quantum Computing and Machine Learning Demo")
-
-st.header("Initialize IBMQ Account")
-
-if not initialize_ibmq():
-    st.error("No IBM Quantum Experience credentials found.")
-    api_token = st.text_input("Enter your IBMQ API token:")
-    if st.button("Save API token"):
-        if api_token:
-            IBMQ.save_account(api_token)
-            st.success("IBMQ API token saved. Please restart the app.")
-        else:
-            st.error("API token cannot be empty.")
-
-st.header("Ask a Question")
-user_question = st.text_input("Enter your question:")
-if st.button("Submit"):
-    answer = answer_question(user_question)
-    st.write(answer)
-
-# Display quantum circuit result
-if initialize_ibmq():
-    st.header("Quantum Circuit Result")
-    quantum_result = run_quantum_circuit()
-    st.write(f"Quantum circuit result: {quantum_result}")
-
-    st.header("Pennylane Example")
-    pennylane_result = pennylane_example()
-    st.write(f"Pennylane example result: {pennylane_result}")
-
-    st.header("Scikit-learn Example")
-    sklearn_result = sklearn_example()
-    st.write(f"Scikit-learn example coefficients: {sklearn_result}")
-
-    st.header("Matplotlib Example")
-    data = pd.DataFrame({
-        'x': range(10),
-        'y': range(10)
-    })
-    plt.plot(data['x'], data['y'])
+    st.header("Quantum Circuit Simulation")
+    counts = run_quantum_circuit()
+    st.write("Quantum Circuit Result:", counts)
+    plot_histogram(counts)
     st.pyplot(plt)
 
-    if 'pipeline' in globals():
-        st.header("Transformers Example")
-        classifier = pipeline('sentiment-analysis')
-        st.write(classifier('We are very happy to show you the 🤗 Transformers library.'))
-
-    st.header("Torch Example")
-    tensor = torch.tensor([1, 2, 3])
-    st.write(tensor)
-
-    st.header("TensorFlow Example")
-    a = tf.constant(1.0)
-    b = tf.constant(2.0)
-    st.write(a + b)
-
-    st.header("Google API Client Example")
-    st.write("Google API Client is installed.")
-
-# Add more sections to demonstrate other libraries as needed
+# To run the app, use the command: streamlit run app.py
