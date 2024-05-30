@@ -1,6 +1,6 @@
 streamlit==1.35.0
 pennylane==0.36.0
-pennylane-qiskit==0.25.0
+pennylane-qiskit==0.24.0
 qiskit==0.41.0
 qiskit-aer==0.11.2
 qiskit-ibmq-provider==0.20.0
