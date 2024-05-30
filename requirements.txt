@@ -11,3 +11,4 @@ torch
 tensorflow
 google-api-python-client
 pylatexenc
+tf-keras
