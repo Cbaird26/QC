@@ -1,41 +1,38 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 from qiskit import IBMQ, Aer, execute, QuantumCircuit
 from qiskit.visualization import plot_histogram
+import matplotlib.pyplot as plt
 
 # Load IBMQ account
 IBMQ.load_account()
 provider = IBMQ.get_provider(hub='ibm-q')
 
-# Define the CUTOE formula
-# Note: Replace this with the actual mathematical representation of the CUTOE formula
+# Define a placeholder for the ToE formula
 def cutoe_formula(x, y, z):
-    return x**2 + y**2 + z**2  # Placeholder formula
+    # This is a placeholder formula; replace with the actual CUTOE formula
+    return np.sin(x) * np.cos(y) * np.exp(z)
 
-# Function to run a quantum circuit
+# Quantum circuit simulation for a part of the ToE formula
 def run_quantum_circuit():
-    # Create a quantum circuit
     qc = QuantumCircuit(3, 3)
     qc.h(0)
     qc.cx(0, 1)
     qc.cx(0, 2)
     qc.measure([0, 1, 2], [0, 1, 2])
     
-    # Use Aer's qasm_simulator
     simulator = Aer.get_backend('qasm_simulator')
-    
-    # Execute the circuit on the qasm simulator
     job = execute(qc, simulator, shots=1000)
-    
-    # Grab results from the job
     result = job.result()
-    
-    # Returns counts
-    return result.get_counts(qc)
+    counts = result.get_counts(qc)
+    return counts
+
+# Classical computation for a part of the ToE formula
+def classical_computation(x, y, z):
+    return cutoe_formula(x, y, z)
 
 # Streamlit interface
-st.title("Quantum Supercomputer: Solving the CUTOE Formula")
+st.title("Quantum Supercomputer: Solving the Theory of Everything (ToE)")
 
 st.header("Input Parameters")
 x = st.number_input("Enter value for x", value=1.0)
@@ -43,13 +40,13 @@ y = st.number_input("Enter value for y", value=1.0)
 z = st.number_input("Enter value for z", value=1.0)
 
 if st.button("Solve Formula"):
-    result = cutoe_formula(x, y, z)
-    st.write(f"Result of CUTOE formula: {result}")
+    st.header("Classical Computation Result")
+    classical_result = classical_computation(x, y, z)
+    st.write(f"Classical result of CUTOE formula: {classical_result}")
     
     st.header("Quantum Circuit Simulation")
-    counts = run_quantum_circuit()
-    st.write("Quantum Circuit Result:", counts)
-    plot_histogram(counts)
-    st.pyplot(plt)
+    quantum_counts = run_quantum_circuit()
+    st.write("Quantum Circuit Result:", quantum_counts)
+    st.pyplot(plot_histogram(quantum_counts))
 
 # To run the app, use the command: streamlit run app.py
