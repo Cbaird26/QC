@@ -1,52 +1,45 @@
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-from qiskit import Aer, QuantumCircuit, execute
-from scipy.constants import hbar, m_e
+import pennylane as qml
+from pennylane import numpy as np
+from sklearn.datasets import make_moons
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-# Define the potential well boundaries
-L = 1.0  # Width of the box in meters
+# Set up the device
+dev = qml.device('qiskit.aer', wires=2)
 
-# Define a function to compute the energy levels of a particle in a box using classical physics
-def classical_energy_levels(n, L):
-    return (n**2 * np.pi**2 * hbar**2) / (2 * m_e * L**2)
+# Define the quantum node
+@qml.qnode(dev)
+def circuit(params, x):
+    qml.AngleEmbedding(x, wires=[0, 1])
+    qml.StronglyEntanglingLayers(params, wires=[0, 1])
+    return qml.expval(qml.PauliZ(0))
 
-# Define a function to run a quantum circuit simulating the energy levels of a particle in a box
-def run_quantum_simulation(n, L):
-    qc = QuantumCircuit(1, 1)
-    qc.h(0)  # Apply a Hadamard gate
-    qc.measure(0, 0)
-    
-    simulator = Aer.get_backend('qasm_simulator')
-    job = execute(qc, simulator, shots=1000)
-    result = job.result()
-    counts = result.get_counts(qc)
-    return counts
+# Define the cost function
+def cost(params, X, Y):
+    predictions = [circuit(params, x) for x in X]
+    return np.mean((predictions - Y)**2)
+
+# Load and preprocess data
+X, Y = make_moons(n_samples=100, noise=0.1, random_state=42)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Initialize parameters
+params = np.random.randn(3, 2, 3)
+
+# Optimize the parameters
+opt = qml.GradientDescentOptimizer(stepsize=0.1)
+epochs = 100
+for epoch in range(epochs):
+    params = opt.step(lambda v: cost(v, X_train, Y_train), params)
+
+# Evaluate the model
+predictions = [circuit(params, x) for x in X_test]
+accuracy = np.mean((np.sign(predictions) == Y_test))
+st.write(f"Accuracy: {accuracy * 100:.2f}%")
 
 # Streamlit interface
-st.title("Quantum and Classical Simulation of a Particle in a Box")
-
-st.header("Input Parameters")
-n = st.number_input("Enter quantum number n", min_value=1, value=1)
-L = st.number_input("Enter the width of the box L (in meters)", value=1.0)
-
-if st.button("Solve"):
-    st.header("Classical Computation Result")
-    classical_energy = classical_energy_levels(n, L)
-    st.write(f"Energy level using classical physics: {classical_energy:.5e} J")
-    
-    st.header("Quantum Circuit Simulation")
-    quantum_counts = run_quantum_simulation(n, L)
-    st.write("Quantum Circuit Result:", quantum_counts)
-    st.pyplot(plot_histogram(quantum_counts))
-
-    st.header("Visualizing Wave Function")
-    x = np.linspace(0, L, 1000)
-    wave_function = np.sqrt(2/L) * np.sin(n * np.pi * x / L)
-    plt.plot(x, wave_function)
-    plt.xlabel('Position (m)')
-    plt.ylabel('Wave Function')
-    plt.title('Wave Function of a Particle in a Box')
-    st.pyplot(plt)
-
-# To run the app, use the command: streamlit run app.py
+st.t
