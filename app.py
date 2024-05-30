@@ -24,21 +24,6 @@ def initialize_ibmq():
     except IBMQAccountCredentialsNotFound:
         return False
 
-# Streamlit app interface
-st.title("Quantum Computing and Machine Learning Demo")
-
-st.header("Initialize IBMQ Account")
-
-if not initialize_ibmq():
-    st.error("No IBM Quantum Experience credentials found.")
-    api_token = st.text_input("Enter your IBMQ API token:")
-    if st.button("Save API token"):
-        if api_token:
-            IBMQ.save_account(api_token)
-            st.success("IBMQ API token saved. Please restart the app.")
-        else:
-            st.error("API token cannot be empty.")
-
 # Function to run a quantum circuit
 def run_quantum_circuit():
     qc = QuantumCircuit(2, 2)
@@ -70,6 +55,35 @@ def sklearn_example():
     model = LinearRegression().fit(X, y)
     return model.coef_
 
+# Function to answer user questions
+def answer_question(question):
+    if "theory of everything" in question.lower():
+        return "The Theory of Everything aims to unify general relativity and quantum mechanics into a single theoretical framework. There isn't a single accepted formula yet, but string theory and loop quantum gravity are leading candidates."
+    else:
+        return "I don't have an answer to that question. Please try asking something else."
+
+# Streamlit app interface
+st.title("Quantum Computing and Machine Learning Demo")
+
+st.header("Initialize IBMQ Account")
+
+if not initialize_ibmq():
+    st.error("No IBM Quantum Experience credentials found.")
+    api_token = st.text_input("Enter your IBMQ API token:")
+    if st.button("Save API token"):
+        if api_token:
+            IBMQ.save_account(api_token)
+            st.success("IBMQ API token saved. Please restart the app.")
+        else:
+            st.error("API token cannot be empty.")
+
+st.header("Ask a Question")
+user_question = st.text_input("Enter your question:")
+if st.button("Submit"):
+    answer = answer_question(user_question)
+    st.write(answer)
+
+# Display quantum circuit result
 if initialize_ibmq():
     st.header("Quantum Circuit Result")
     quantum_result = run_quantum_circuit()
