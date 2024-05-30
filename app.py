@@ -97,4 +97,9 @@ if initialize_ibmq():
     st.header("TensorFlow Example")
     a = tf.constant(1.0)
     b = tf.constant(2.0)
-    st.write(a 
+    st.write(a + b)
+
+    st.header("Google API Client Example")
+    st.write("Google API Client is installed.")
+
+# Add more sections to demonstrate other libraries as needed
