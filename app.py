@@ -1,6 +1,6 @@
 import streamlit as st
 from qiskit import Aer, execute, QuantumCircuit
-from qiskit.providers.ibmq import IBMQ
+from qiskit.providers.ibmq import IBMQ, IBMQAccountCredentialsNotFound
 import pennylane as qml
 from sklearn.linear_model import LinearRegression
 import numpy as np
@@ -11,8 +11,28 @@ import torch
 import tensorflow as tf
 from googleapiclient.discovery import build
 
-# Initialize IBMQ account
-IBMQ.load_account()
+# Function to initialize IBMQ account
+def initialize_ibmq():
+    try:
+        IBMQ.load_account()
+        return True
+    except IBMQAccountCredentialsNotFound:
+        return False
+
+# Streamlit app interface
+st.title("Quantum Computing and Machine Learning Demo")
+
+st.header("Initialize IBMQ Account")
+
+if not initialize_ibmq():
+    st.error("No IBM Quantum Experience credentials found.")
+    api_token = st.text_input("Enter your IBMQ API token:")
+    if st.button("Save API token"):
+        if api_token:
+            IBMQ.save_account(api_token)
+            st.success("IBMQ API token saved. Please restart the app.")
+        else:
+            st.error("API token cannot be empty.")
 
 # Function to run a quantum circuit
 def run_quantum_circuit():
@@ -45,43 +65,36 @@ def sklearn_example():
     model = LinearRegression().fit(X, y)
     return model.coef_
 
-# Streamlit app interface
-st.title("Quantum Computing and Machine Learning Demo")
+if initialize_ibmq():
+    st.header("Quantum Circuit Result")
+    quantum_result = run_quantum_circuit()
+    st.write(f"Quantum circuit result: {quantum_result}")
 
-st.header("Quantum Circuit Result")
-quantum_result = run_quantum_circuit()
-st.write(f"Quantum circuit result: {quantum_result}")
+    st.header("Pennylane Example")
+    pennylane_result = pennylane_example()
+    st.write(f"Pennylane example result: {pennylane_result}")
 
-st.header("Pennylane Example")
-pennylane_result = pennylane_example()
-st.write(f"Pennylane example result: {pennylane_result}")
+    st.header("Scikit-learn Example")
+    sklearn_result = sklearn_example()
+    st.write(f"Scikit-learn example coefficients: {sklearn_result}")
 
-st.header("Scikit-learn Example")
-sklearn_result = sklearn_example()
-st.write(f"Scikit-learn example coefficients: {sklearn_result}")
+    st.header("Matplotlib Example")
+    data = pd.DataFrame({
+        'x': range(10),
+        'y': range(10)
+    })
+    plt.plot(data['x'], data['y'])
+    st.pyplot(plt)
 
-st.header("Matplotlib Example")
-data = pd.DataFrame({
-    'x': range(10),
-    'y': range(10)
-})
-plt.plot(data['x'], data['y'])
-st.pyplot(plt)
+    st.header("Transformers Example")
+    classifier = pipeline('sentiment-analysis')
+    st.write(classifier('We are very happy to show you the 🤗 Transformers library.'))
 
-st.header("Transformers Example")
-classifier = pipeline('sentiment-analysis')
-st.write(classifier('We are very happy to show you the 🤗 Transformers library.'))
+    st.header("Torch Example")
+    tensor = torch.tensor([1, 2, 3])
+    st.write(tensor)
 
-st.header("Torch Example")
-tensor = torch.tensor([1, 2, 3])
-st.write(tensor)
-
-st.header("TensorFlow Example")
-a = tf.constant(1.0)
-b = tf.constant(2.0)
-st.write(a + b)
-
-st.header("Google API Client Example")
-st.write("Google API Client is installed.")
-
-# Add more sections to demonstrate other libraries as needed
+    st.header("TensorFlow Example")
+    a = tf.constant(1.0)
+    b = tf.constant(2.0)
+    st.write(a 
