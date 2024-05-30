@@ -1,10 +1,16 @@
+import os
 import streamlit as st
 import pennylane as qml
 from pennylane import numpy as np
-from qiskit import IBMQ
+from qiskit_ibm_provider import IBMProvider
 
-# Initialize IBMQ account
-IBMQ.load_account()
+# Initialize IBMQ account using environment variable
+api_token = os.getenv('QISKIT_IBM_API_TOKEN')
+if api_token:
+    IBMProvider.save_account(api_token, overwrite=True)
+    provider = IBMProvider()
+else:
+    st.error("IBM Quantum API token not found. Please set the 'QISKIT_IBM_API_TOKEN' environment variable.")
 
 # Set up the quantum device
 dev = qml.device('qiskit.aer', wires=2)
