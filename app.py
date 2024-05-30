@@ -4,6 +4,10 @@ from pennylane import numpy as np
 from sklearn.datasets import make_moons
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from qiskit import IBMQ
+
+# Initialize IBMQ account
+IBMQ.load_account()
 
 # Set up the device
 dev = qml.device('qiskit.aer', wires=2)
@@ -42,4 +46,6 @@ accuracy = np.mean((np.sign(predictions) == Y_test))
 st.write(f"Accuracy: {accuracy * 100:.2f}%")
 
 # Streamlit interface
-st.t
+st.title("Quantum Machine Learning with Qiskit and PennyLane")
+st.header("Model Accuracy")
+st.write(f"Accuracy on test data: {accuracy * 100:.2f}%")
