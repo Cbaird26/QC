@@ -1,17 +1,16 @@
 import streamlit as st
-from qiskit import IBMQ, Aer, execute, QuantumCircuit
-from qiskit.providers.ibmq import least_busy
+from qiskit import Aer, execute, QuantumCircuit
+from qiskit_ibm_provider import IBMProvider, least_busy
 
 # Get the IBM Qiskit API token from Streamlit secrets
 API_TOKEN = st.secrets["IBM_QUANTUM_API_TOKEN"]
 
 # Load your IBM Qiskit account
-IBMQ.save_account(API_TOKEN, overwrite=True)
-provider = IBMQ.load_account()
+provider = IBMProvider(token=API_TOKEN)
 
 # Get the least busy backend
 backend = least_busy(provider.backends(filters=lambda x: x.configuration().n_qubits >= 5 and
-                                                  not x.configuration().simulator and x.status().operational==True))
+                                                     not x.configuration().simulator and x.status().operational==True))
 
 # Function to run a quantum circuit
 def run_quantum_circuit():
