@@ -1,16 +1,5 @@
 import streamlit as st
 from qiskit import Aer, execute, QuantumCircuit
-from qiskit_ibm_provider import IBMProvider, least_busy
-
-# Get the IBM Qiskit API token from Streamlit secrets
-API_TOKEN = st.secrets["IBM_QUANTUM_API_TOKEN"]
-
-# Load your IBM Qiskit account
-provider = IBMProvider(token=API_TOKEN)
-
-# Get the least busy backend
-backend = least_busy(provider.backends(filters=lambda x: x.configuration().n_qubits >= 5 and
-                                                     not x.configuration().simulator and x.status().operational==True))
 
 # Function to run a quantum circuit
 def run_quantum_circuit():
@@ -19,7 +8,8 @@ def run_quantum_circuit():
     qc.cx(0, 1)
     qc.measure([0,1], [0,1])
     
-    job = execute(qc, backend, shots=1024)
+    simulator = Aer.get_backend('qasm_simulator')
+    job = execute(qc, simulator, shots=1024)
     result = job.result()
     counts = result.get_counts(qc)
     return counts
